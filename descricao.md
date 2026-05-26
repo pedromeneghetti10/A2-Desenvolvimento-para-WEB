@@ -21,3 +21,4 @@ Para realizar um agendamento, o usuário deve se autenticar no sistema. O ArenaR
 - **Cancelamento de Reservas (Privado - Atleta/Admin):** Opção de desistência do horário dentro das regras do sistema.
 - **Gerenciamento de Espaços (Privado - Admin):** Painel administrativo com o CRUD completo (Criar, Ler, Atualizar e Deletar) de quadras.
 - **Controle de Ocupação (Privado - Admin):** Visualização consolidada de todos os agendamentos do dia para controle interno da arena.
+- **Forma de Pagamento (Apenas Presencial):** O sistema web é focado estritamente no agendamento e reserva do horário. **Não há cobrança online**. Todo o pagamento do valor do aluguel deve ser realizado presencialmente no local no dia do uso da quadra.
