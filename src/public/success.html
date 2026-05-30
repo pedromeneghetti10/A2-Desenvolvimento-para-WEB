@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sucesso - ArenaReserve</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+    <header>
+        <div class="header-container">
+            <h1>⚽ ArenaReserve</h1>
+            <nav>
+                <a href="/">Início</a>
+                <a href="/logout">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="success-container">
+            <div class="success-box">
+                <h2>Parabéns, seu horário foi reservado! 🎉</h2>
+                <p>Desejemos que você aproveite cada minuto, pois esporte também é saúde</p>
+
+                <div class="reservation-details">
+                    <h3>Detalhes da Sua Reserva</h3>
+                    <p><strong>Quadra:</strong> <span id="court-name">-</span></p>
+                    <p><strong>Data:</strong> <span id="reservation-date">-</span></p>
+                    <p><strong>Horário:</strong> <span id="reservation-time">-</span></p>
+                    <p><strong>Preço:</strong> R$ <span id="court-price">0,00</span></p>
+                    <p><strong>Local:</strong> <span id="court-address">-</span></p>
+                    <p class="info-pagamento"><strong>Ⓘ Lembre-se:</strong> O pagamento deve ser realizado
+                        presencialmente no local, no dia da sua reserva.</p>
+                </div>
+
+                <div class="success-actions">
+                    <a href="/quadras" class="btn-secondary">Fazer outra reserva</a>
+                    <a href="/" class="btn-primary">Voltar ao Início</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Formata data de YYYY-MM-DD para DD/MM/YYYY
+        function formatDate(dateStr) {
+            const [year, month, day] = dateStr.split('-');
+            return `${day}/${month}/${year}`;
+        }
+
+        // Formata hora para intervalo HH:MM - HH:MM
+        function formatTime(timeStr) {
+            const [hour] = timeStr.split(':');
+            const nextHour = String(parseInt(hour) + 1).padStart(2, '0');
+            return `${timeStr} - ${nextHour}:00`;
+        }
+
+        // Carrega dados da última reserva
+        async function loadLastBooking() {
+            try {
+                const response = await fetch('/api/last-booking');
+                if (response.ok) {
+                    const booking = await response.json();
+
+                    // Preenche os dados dinamicamente
+                    document.getElementById('court-name').textContent = booking.courtName;
+                    document.getElementById('reservation-date').textContent = formatDate(booking.date);
+                    document.getElementById('reservation-time').textContent = formatTime(booking.time);
+                    document.getElementById('court-price').textContent = booking.courtPrice.toFixed(2).replace('.', ',');
+                    document.getElementById('court-address').textContent = booking.courtAddress;
+                } else {
+                    console.log('Erro ao carregar dados da reserva');
+                }
+            } catch (error) {
+                console.log('Erro ao carregar última reserva:', error);
+            }
+        }
+
+        // Carrega dados ao iniciar a página
+        loadLastBooking();
+    </script>
+
+    <footer>
+        <p>&copy; 2026 ArenaReserve. Todos os direitos reservados.</p>
+    </footer>
+</body>
+
+</html>

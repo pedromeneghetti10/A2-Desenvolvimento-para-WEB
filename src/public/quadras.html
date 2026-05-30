@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadras - ArenaReserve</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+    <header>
+        <div class="header-container">
+            <h1>⚽ ArenaReserve</h1>
+            <nav>
+                <a href="/">Início</a>
+                <a href="/quadras">Quadras</a>
+                <a href="/login" class="btn-login">Login</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="quadras-container">
+            <h2>Visualize as quadras e os horários!</h2>
+
+            <div class="quadras-grid" id="quadrasGrid">
+                <p class="loading">Carregando quadras...</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 ArenaReserve. Todos os direitos reservados.</p>
+    </footer>
+
+    <script>
+        // Carrega as quadras da API
+        async function loadCourts() {
+            try {
+                const response = await fetch('/api/courts');
+                if (!response.ok) throw new Error('Erro ao carregar quadras');
+
+                const courts = await response.json();
+                renderCourts(courts);
+            } catch (error) {
+                document.getElementById('quadrasGrid').innerHTML = '<p>Erro ao carregar quadras</p>';
+            }
+        }
+
+        // Renderiza as quadras no HTML
+        function renderCourts(courts) {
+            const grid = document.getElementById('quadrasGrid');
+
+            if (courts.length === 0) {
+                grid.innerHTML = '<p>Nenhuma quadra disponível no momento.</p>';
+                return;
+            }
+
+            const emojis = {
+                'Futebol': '⚽',
+                'Vôlei': '🏐',
+                'Tênis': '🎾',
+                'Beach Tennis': '🏐',
+                'Basquete': '🏀'
+            };
+
+            let html = '';
+            courts.forEach(court => {
+                const emoji = emojis[court.esporte] || '🏟️';
+                html += `
+                    <div class="quadra-card">
+                        <div class="quadra-image">${emoji}</div>
+                        <h3>${court.nome}</h3>
+                        <div class="quadra-info">
+                            <p><strong>Modalidade:</strong> ${court.esporte}</p>
+                            <p><strong>Preço:</strong> R$ ${court.preco.toFixed(2)}/h</p>
+                            <p><strong>Local:</strong> ${court.local}</p>
+                            <p><strong>Avaliação:</strong> ⭐⭐⭐⭐⭐</p>
+                        </div>
+                        <a href="/courts/${court.id}/book" class="btn-secondary">Reservar</a>
+                    </div>
+                `;
+            });
+
+            grid.innerHTML = html;
+        }
+
+        // Carrega as quadras ao inicializar
+        loadCourts();
+    </script>

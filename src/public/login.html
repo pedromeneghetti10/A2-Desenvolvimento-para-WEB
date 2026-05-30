@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - ArenaReserve</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+    <header>
+        <div class="header-container">
+            <h1>⚽ ArenaReserve</h1>
+            <nav>
+                <a href="/">Início</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="auth-container">
+        <div class="auth-box">
+            <h2>Bem-vindo ao ArenaReserve</h2>
+            <p>Crie sua conta ou faça login.</p>
+
+            <form action="/login" method="POST" class="auth-form">
+                <div class="form-group">
+                    <label for="email">E-MAIL</label>
+                    <input type="email" id="email" name="email" placeholder="Digite seu email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">SENHA</label>
+                    <input type="password" id="password" name="password" placeholder="Digite sua senha" required>
+                </div>
+
+                <button type="submit" class="btn-primary-form">Avançar</button>
+            </form>
+
+            <p class="auth-link">
+                Não tenho uma conta, quero me <a href="/register">cadastrar!</a>
+            </p>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 ArenaReserve. Todos os direitos reservados.</p>
+    </footer>
+</body>
+
+</html>

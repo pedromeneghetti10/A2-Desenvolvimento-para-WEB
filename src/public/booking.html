@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reserva - ArenaReserve</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+    <header>
+        <div class="header-container">
+            <h1>⚽ ArenaReserve</h1>
+            <nav>
+                <a href="/">Início</a>
+                <a href="/quadras">Quadras</a>
+                <a href="/logout" class="btn-login">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="booking-container">
+            <h2>Deseja reservar?</h2>
+            <div class="booking-content">
+                <div class="booking-details">
+                    <h3 id="court-name">Carregando...</h3>
+                    <p id="court-address"><strong>Endereço:</strong> <span>Carregando...</span></p>
+                    <p id="court-price"><strong>Preço:</strong> <span>Carregando...</span></p>
+                </div>
+
+                <div class="booking-form">
+                    <h3>Selecione uma data e horário disponível</h3>
+                    <form id="bookingForm">
+                        <div class="form-group">
+                            <label for="date">Data da Reserva</label>
+                            <input type="date" id="date" name="date" required min="">
+                            <small>Selecione uma data a partir de hoje</small>
+                        </div>
+
+                        <div class="horarios" id="horariosContainer">
+                            <h4>Horários disponíveis:</h4>
+                            <p class="loading-message">Selecione uma data para ver horários disponíveis</p>
+                        </div>
+
+                        <input type="hidden" id="courtId" name="courtId" value="">
+                        <button type="submit" class="btn-primary-form" id="submitBtn" disabled>Reservar Horário</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Modal de Confirmação -->
+        <div id="confirmationModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h3>Confirme sua Reserva</h3>
+                <div class="confirmation-details">
+                    <p><strong>Pessoa:</strong> <span id="confirm-user-name">-</span></p>
+                    <p><strong>Quadra:</strong> <span id="confirm-court-name">-</span></p>
+                    <p><strong>Data:</strong> <span id="confirm-date">-</span></p>
+                    <p><strong>Horário:</strong> <span id="confirm-time">-</span></p>
+                    <p><strong>Preço:</strong> <span id="confirm-price">-</span></p>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-primary-form" id="confirmBtn">Confirmar Reserva</button>
+                    <button type="button" class="btn-secondary-form"
+                        onclick="closeConfirmationModal()">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 ArenaReserve. Todos os direitos reservados.</p>
+    </footer>
+
+    <script>
+        let courtData = null;
+        let userName = '';
+
+        // Extrai o ID da quadra da URL
+        const pathArray = window.location.pathname.split('/');
+        const courtId = pathArray[2];
+
+        document.getElementById('courtId').value = courtId;
+
+        // Carrega informações da quadra
+        async function loadCourt() {
+            try {
+                const response = await fetch(`/api/courts/${courtId}`);
+                if (!response.ok) throw new Error('Quadra não encontrada');
+
+                courtData = await response.json();
+                document.getElementById('court-name').textContent = courtData.nome;
+                document.getElementById('court-address').innerHTML = `<strong>Endereço:</strong> ${courtData.local}`;
+                document.getElementById('court-price').innerHTML = `<strong>Preço:</strong> R$ ${courtData.preco.toFixed(2)}/h`;
+            } catch (error) {
+                alert('Erro ao carregar informações da quadra');
+                window.location.href = '/quadras';
+            }
+        }
+
+        // Define data mínima como hoje
+        function setMinDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').min = today;
+            document.getElementById('date').value = today;
+        }
+
+        // Carrega horários disponíveis quando a data muda
+        async function loadAvailableHours() {
+            const date = document.getElementById('date').value;
+            if (!date) return;
+
+            const container = document.getElementById('horariosContainer');
+            container.innerHTML = '<h4>Carregando horários...</h4>';
+
+            try {
+                const response = await fetch(`/api/courts/${courtId}/available-times?date=${date}`);
+                if (!response.ok) throw new Error('Erro ao carregar horários');
+
+                const data = await response.json();
+                renderHorarios(data);
+            } catch (error) {
+                container.innerHTML = '<h4>Erro ao carregar horários</h4>';
+            }
+        }
+
+        // Renderiza os horários na página
+        function renderHorarios(data) {
+            const container = document.getElementById('horariosContainer');
+            let html = '<h4>Horários disponíveis:</h4>';
+
+            data.allTimes.forEach(time => {
+                const isAvailable = data.availableTimes.includes(time);
+                const [hora, minuto] = time.split(':');
+                const proximaHora = parseInt(hora) + 1;
+                const label = `${hora}:${minuto} - ${proximaHora}:${minuto}`;
+
+                if (isAvailable) {
+                    html += `
+                        <div class="horario-option available">
+                            <input type="radio" id="hora-${time}" name="time" value="${time}" required>
+                            <label for="hora-${time}">${label} • Horário disponível, clique para reservar!</label>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="horario-option unavailable">
+                            <input type="radio" id="hora-${time}" name="time" value="${time}" disabled>
+                            <label for="hora-${time}">${label} • Horário indisponível!</label>
+                        </div>
+                    `;
+                }
+            });
+
+            if (data.availableTimes.length === 0) {
+                html += '<p class="no-available">Nenhum horário disponível para esta data. Escolha outra data.</p>';
+            }
+
+            container.innerHTML = html;
+
+            // Ativa o botão se houver horários disponíveis
+            document.getElementById('submitBtn').disabled = data.availableTimes.length === 0;
+        }
+
+        // Formata data para exibição
+        function formatDate(dateString) {
+            const [year, month, day] = dateString.split('-');
+            return `${day}/${month}/${year}`;
+        }
+
+        // Formata horário para exibição
+        function formatTime(timeString) {
+            const [hora, minuto] = timeString.split(':');
+            const proximaHora = parseInt(hora) + 1;
+            return `${hora}:${minuto} - ${proximaHora}:${minuto}`;
+        }
+
+        // Mostra modal de confirmação
+        async function showConfirmationModal() {
+            const date = document.getElementById('date').value;
+            const timeInput = document.querySelector('input[name="time"]:checked');
+
+            if (!timeInput) {
+                alert('Selecione um horário');
+                return;
+            }
+
+            const time = timeInput.value;
+
+            // Carrega o nome do usuário
+            try {
+                const response = await fetch('/api/user');
+                console.log('API /api/user status:', response.status);
+                if (response.ok) {
+                    const user = await response.json();
+                    console.log('User data:', user);
+                    userName = user.name || 'Usuario';
+                } else {
+                    console.log('API error status:', response.status);
+                    userName = 'Usuario';
+                }
+            } catch (error) {
+                console.log('Fetch error:', error);
+                userName = 'Usuario';
+            }
+            console.log('Nome definido como:', userName);
+
+            // Preenche os dados no modal
+            document.getElementById('confirm-user-name').textContent = userName;
+            document.getElementById('confirm-court-name').textContent = courtData.nome;
+            document.getElementById('confirm-date').textContent = formatDate(date);
+            document.getElementById('confirm-time').textContent = formatTime(time);
+            document.getElementById('confirm-price').textContent = `R$ ${courtData.preco.toFixed(2)}`;
+
+            // Mostra o modal
+            document.getElementById('confirmationModal').style.display = 'flex';
+        }
+
+        // Fecha modal de confirmação
+        function closeConfirmationModal() {
+            document.getElementById('confirmationModal').style.display = 'none';
+        }
+
+        // Confirma e faz a reserva
+        function confirmBooking() {
+            // Restaura o formulário com a ação POST padrão
+            const form = document.getElementById('bookingForm');
+            form.action = '/bookings';
+            form.method = 'POST';
+            closeConfirmationModal();
+            form.submit();
+        }
+
+        // Inicializa a página
+        loadCourt();
+        setMinDate();
+        loadAvailableHours();
+
+        // Busca o nome do usuário logado
+        async function loadUserName() {
+            try {
+                const response = await fetch('/api/user');
+                if (response.ok) {
+                    const user = await response.json();
+                    userName = user.name;
+                }
+            } catch (error) {
+                console.log('Erro ao carregar nome do usuário');
+                userName = 'Usuário';
+            }
+        }
+
+        // Listeners para eventos
+        document.getElementById('date').addEventListener('change', loadAvailableHours);
+
+        // Listener para submit do form (mostra confirmação)
+        document.getElementById('bookingForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            showConfirmationModal();
+        });
+
+        // Listener para confirmar no modal
+        document.getElementById('confirmBtn').addEventListener('click', confirmBooking);
+    </script>
+</body>
+
+</html>

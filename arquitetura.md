@@ -10,8 +10,7 @@ src/
 ├── services/           # Concentra as regras de negócio e validações lógicas do sistema
 ├── repositories/       # Isolamento do acesso aos dados (leitura e escrita direta nos arquivos/memória)
 ├── middlewares/        # Interceptadores de requisições (controle de autenticação e permissões de acesso)
-├── routes/             # Definição e mapeamento de todos os endpoints e rotas da aplicação
-├── views/              # Camada de apresentação visual da aplicação (páginas HTML)
+├── routes/             # Definição e mapeamento de todos os endpoints e rotas da aplicação             
 └── public/             # Recursos estáticos do frontend (arquivos .css, imagens e scripts .js locais)
 ```
 

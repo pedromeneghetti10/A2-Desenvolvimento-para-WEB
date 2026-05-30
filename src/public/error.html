@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erro - ArenaReserve</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+    <header>
+        <div class="header-container">
+            <h1>⚽ ArenaReserve</h1>
+            <nav>
+                <a href="/">Início</a>
+                <a href="/login" class="btn-login">Login</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="error-container">
+            <div class="error-box">
+                <h2>Erro! ❌</h2>
+                <p id="error-message">Você não pode remover uma quadra se ainda não existe nenhuma!</p>
+
+                <div class="error-actions">
+                    <a href="/" class="btn-primary">Voltar ao Início</a>
+                    <a href="/login" class="btn-secondary">Fazer Login</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 ArenaReserve. Todos os direitos reservados.</p>
+    </footer>
+
+    <script>
+        // Pega a mensagem de erro da URL
+        const params = new URLSearchParams(window.location.search);
+        const message = params.get('message');
+        if (message) {
+            document.getElementById('error-message').textContent = decodeURIComponent(message);
+        }
+    </script>
+</body>
+
+</html>

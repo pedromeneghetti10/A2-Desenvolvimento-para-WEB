@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin - ArenaReserve</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+    <header>
+        <div class="header-container">
+            <h1>⚽ ArenaReserve</h1>
+            <nav>
+                <a href="/admin/dashboard">Dashboard</a>
+                <a href="/logout" class="btn-login">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="admin-container">
+            <h2>Seu login foi reconhecido como administrador!</h2>
+            <p class="admin-subtitle">Painel de Controle - Gerenciamento de Quadras</p>
+
+            <div class="admin-actions">
+                <div class="admin-card">
+                    <h3>🏗️ Criar Quadra</h3>
+                    <p>Deseja criar uma nova quadra?</p>
+                    <button class="btn-primary-form" onclick="showCreateForm()">Criar quadra!</button>
+                </div>
+
+                <div class="admin-card">
+                    <h3>✏️ Editar Quadra</h3>
+                    <p>Deseja editar informações de uma quadra?</p>
+                    <button class="btn-secondary-form" onclick="selectCourtForEdit()">Editar quadra!</button>
+                </div>
+
+                <div class="admin-card">
+                    <h3>🗑️ Remover Quadra</h3>
+                    <p>Deseja remover uma quadra?</p>
+                    <button class="btn-danger-form" onclick="selectCourtForDelete()">Remover quadra!</button>
+                </div>
+            </div>
+
+            <!-- Modal para criar quadra -->
+            <div id="createModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <h3>Criar Nova Quadra</h3>
+                    <form id="createForm">
+                        <div class="form-group">
+                            <label for="nome">Nome da Quadra</label>
+                            <input type="text" id="nome" name="nome" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="esporte">Modalidade Esportiva</label>
+                            <input type="text" id="esporte" name="esporte" placeholder="Ex: Futebol, Tênis, Vôlei"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label for="preco">Preço por Hora (R$)</label>
+                            <input type="number" id="preco" name="preco" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="local">Localização</label>
+                            <input type="text" id="local" name="local" required>
+                        </div>
+                        <div class="modal-buttons">
+                            <button type="submit" class="btn-primary-form">Salvar</button>
+                            <button type="button" class="btn-secondary-form" onclick="closeModals()">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal para editar quadra -->
+            <div id="editModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <h3>Editar Quadra</h3>
+                    <form id="editForm">
+                        <div class="form-group">
+                            <label for="edit-nome">Nome da Quadra</label>
+                            <input type="text" id="edit-nome" name="nome" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-esporte">Modalidade Esportiva</label>
+                            <input type="text" id="edit-esporte" name="esporte" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-preco">Preço por Hora (R$)</label>
+                            <input type="number" id="edit-preco" name="preco" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-local">Localização</label>
+                            <input type="text" id="edit-local" name="local" required>
+                        </div>
+                        <div class="modal-buttons">
+                            <button type="submit" class="btn-primary-form">Atualizar</button>
+                            <button type="button" class="btn-secondary-form" onclick="closeModals()">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal para deletar quadra -->
+            <div id="deleteModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <h3>Remover Quadra</h3>
+                    <p id="deleteMessage">Tem certeza que deseja remover esta quadra?</p>
+                    <form id="deleteForm">
+                        <input type="hidden" id="deleteCourtId">
+                        <div class="modal-buttons">
+                            <button type="submit" class="btn-danger-form">Remover</button>
+                            <button type="button" class="btn-secondary-form" onclick="closeModals()">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="quadras-listagem">
+                <h3>Quadras Cadastradas</h3>
+                <div class="quadras-list" id="quadrasList">
+                    <p class="loading">Carregando quadras...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 ArenaReserve. Todos os direitos reservados.</p>
+    </footer>
+
+    <script>
+        let currentEditCourtId = null;
+
+        // Carrega as quadras ao inicializar
+        loadCourts();
+
+        // Carrega quadras da API
+        async function loadCourts() {
+            try {
+                const response = await fetch('/api/courts');
+                const courts = await response.json();
+                renderCourts(courts);
+            } catch (error) {
+                document.getElementById('quadrasList').innerHTML = '<p>Erro ao carregar quadras</p>';
+            }
+        }
+
+        // Renderiza as quadras
+        function renderCourts(courts) {
+            const list = document.getElementById('quadrasList');
+
+            if (courts.length === 0) {
+                list.innerHTML = '<p>Nenhuma quadra cadastrada. Crie uma nova!</p>';
+                return;
+            }
+
+            let html = '';
+            courts.forEach(court => {
+                html += `
+                    <div class="quadra-item">
+                        <h4>${court.nome}</h4>
+                        <p>Modalidade: ${court.esporte} | Preço: R$ ${court.preco.toFixed(2)}/h | Local: ${court.local}</p>
+                        <div class="item-actions">
+                            <button class="btn-secondary-small" onclick="openEditForm(${court.id})">Editar</button>
+                            <button class="btn-danger-small" onclick="openDeleteForm(${court.id}, '${court.nome}')">Deletar</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            list.innerHTML = html;
+        }
+
+        // Modais
+        function showCreateForm() {
+            document.getElementById('createForm').reset();
+            document.getElementById('createModal').style.display = 'flex';
+        }
+
+        function selectCourtForEdit() {
+            closeModals();
+            alert('Clique no botão "Editar" de uma quadra abaixo para editá-la');
+        }
+
+        function selectCourtForDelete() {
+            closeModals();
+            alert('Clique no botão "Deletar" de uma quadra abaixo para removê-la');
+        }
+
+        async function openEditForm(courtId) {
+            try {
+                const response = await fetch(`/api/courts/${courtId}`);
+                const court = await response.json();
+
+                currentEditCourtId = courtId;
+                document.getElementById('edit-nome').value = court.nome;
+                document.getElementById('edit-esporte').value = court.esporte;
+                document.getElementById('edit-preco').value = court.preco;
+                document.getElementById('edit-local').value = court.local;
+
+                document.getElementById('editModal').style.display = 'flex';
+            } catch (error) {
+                alert('Erro ao carregar informações da quadra');
+            }
+        }
+
+        function openDeleteForm(courtId, courtName) {
+            document.getElementById('deleteCourtId').value = courtId;
+            document.getElementById('deleteMessage').textContent = `Tem certeza que deseja remover a quadra "${courtName}"?`;
+            document.getElementById('deleteModal').style.display = 'flex';
+        }
+
+        function closeModals() {
+            document.getElementById('createModal').style.display = 'none';
+            document.getElementById('editModal').style.display = 'none';
+            document.getElementById('deleteModal').style.display = 'none';
+        }
+
+        // Criar quadra
+        document.getElementById('createForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(document.getElementById('createForm'));
+
+            try {
+                const response = await fetch('/admin/courts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams(formData)
+                });
+
+                if (response.ok) {
+                    alert('Quadra criada com sucesso!');
+                    closeModals();
+                    loadCourts();
+                } else {
+                    alert('Erro ao criar quadra');
+                }
+            } catch (error) {
+                alert('Erro: ' + error.message);
+            }
+        });
+
+        // Editar quadra
+        document.getElementById('editForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(document.getElementById('editForm'));
+
+            try {
+                const response = await fetch(`/admin/courts/${currentEditCourtId}/edit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams(formData)
+                });
+
+                if (response.ok) {
+                    alert('Quadra atualizada com sucesso!');
+                    closeModals();
+                    loadCourts();
+                } else {
+                    alert('Erro ao atualizar quadra');
+                }
+            } catch (error) {
+                alert('Erro: ' + error.message);
+            }
+        });
+
+        // Deletar quadra
+        document.getElementById('deleteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const courtId = document.getElementById('deleteCourtId').value;
+
+            try {
+                const response = await fetch(`/admin/courts/${courtId}/delete`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    alert('Quadra removida com sucesso!');
+                    closeModals();
+                    loadCourts();
+                } else {
+                    alert('Erro ao remover quadra');
+                }
+            } catch (error) {
+                alert('Erro: ' + error.message);
+            }
+        });
+    </script>
+</body>
+
+</html>

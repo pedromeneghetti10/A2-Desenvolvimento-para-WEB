@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - ArenaReserve</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+    <header>
+        <div class="header-container">
+            <h1>⚽ ArenaReserve</h1>
+            <nav>
+                <a href="/">Início</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="auth-container">
+        <div class="auth-box">
+            <h2>Faça seu cadastro no ArenaReserve</h2>
+
+            <form action="/register" method="POST" class="auth-form">
+                <div class="form-group">
+                    <label for="name">NOME</label>
+                    <input type="text" id="name" name="name" placeholder="Digite seu nome" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">TELEFONE</label>
+                    <input type="tel" id="phone" name="phone" placeholder="Digite seu telefone" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">E-MAIL</label>
+                    <input type="email" id="email" name="email" placeholder="Digite seu e-mail" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">CRIE UMA SENHA</label>
+                    <input type="password" id="password" name="password" placeholder="Crie uma senha segura" required>
+                </div>
+
+                <button type="submit" class="btn-primary-form">Avançar</button>
+            </form>
+
+            <p class="auth-link">
+                Já tenho uma conta, quero fazer <a href="/login">login!</a>
+            </p>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 ArenaReserve. Todos os direitos reservados.</p>
+    </footer>
+</body>
+
+</html>
